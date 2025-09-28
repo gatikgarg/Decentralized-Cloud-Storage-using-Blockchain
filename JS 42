@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM and Form Validation Hands-on</title>
+    <style>
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>1. Array Display (List Format)</h2>
+    <ul id="array-list-container">
+        </ul>
+
+    <hr>
+
+    <h2>2. Name Input Validation</h2>
+    <label for="nameInput">Enter Name:</label>
+    <input type="text" id="nameInput" oninput="validateName()">
+    <span id="nameError" class="error"></span>
+    
+    <script>
+        // --- Task 1: Create an array of strings and display its values in list format in browser. ---
+
+        /**
+         * Creates an array and dynamically generates <li> elements 
+         * inside the <ul> with the ID 'array-list-container'.
+         */
+        function displayArrayAsList() {
+            const dataArray = ["Apple", "Banana", "Cherry", "Date", "Elderberry"];
+            const listContainer = document.getElementById('array-list-container');
+
+            dataArray.forEach(item => {
+                // Create a new list item element
+                const listItem = document.createElement('li');
+                
+                // Set the text content of the list item
+                listItem.textContent = item; 
+                
+                // Append the new list item to the <ul> container
+                listContainer.appendChild(listItem);
+            });
+
+            console.log("Task 1 complete: Array displayed as a list on the page.");
+        }
+
+
+        // --- Task 2: Take input from the name text box and validate to check if it contains only alphabets or not. ---
+        
+        /**
+         * Validates the input field to ensure it contains only alphabetical characters (a-z, A-Z).
+         * Displays an error message next to the textbox if validation fails.
+         */
+        function validateName() {
+            const nameInput = document.getElementById('nameInput');
+            const errorElement = document.getElementById('nameError');
+            const inputValue = nameInput.value;
+
+            // Regular Expression (RegEx) to check for ONLY alphabetic characters.
+            // ^ asserts start of string
+            // [a-zA-Z] matches any lowercase or uppercase letter
+            // + matches one or more times
+            // $ asserts end of string
+            const alphaOnlyRegex = /^[a-zA-Z]+$/;
+
+            if (inputValue.length > 0 && !alphaOnlyRegex.test(inputValue)) {
+                // Validation failed: contains numbers, symbols, or spaces
+                errorElement.textContent = "please enter only alphabets";
+                nameInput.style.borderColor = 'red';
+            } else {
+                // Validation passed or input is empty
+                errorElement.textContent = "";
+                nameInput.style.borderColor = ''; // Clear border color
+            }
+        }
+
+        // Execute Task 1 when the script loads
+        displayArrayAsList();
+
+    </script>
+</body>
+</html>
