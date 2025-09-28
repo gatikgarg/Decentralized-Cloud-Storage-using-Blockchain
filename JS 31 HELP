@@ -1,0 +1,27 @@
+<script>
+    // 1. Create an array of Strings with the specified mixed-case values.
+    let stringArray = ["s'tanDarD", "CharTered", "banK"];
+
+    console.log("--- Original Array ---");
+    console.log(stringArray);
+
+    // 2. Replace the array values with corresponding uppercase values.
+    // We use the Array.prototype.map() method to iterate over the array
+    // and apply the String.prototype.toUpperCase() method to each element.
+    const uppercaseArray = stringArray.map(function(element) {
+        return element.toUpperCase();
+    });
+
+    // Note: If you must modify the original array in place (mutating it), 
+    // you would use a loop, but 'map' is the modern, non-mutating approach:
+    /*
+    for (let i = 0; i < stringArray.length; i++) {
+        stringArray[i] = stringArray[i].toUpperCase();
+    }
+    */
+    
+    // Display the result
+    console.log("\n--- Uppercase Array ---");
+    console.log(uppercaseArray); // Expected output: ["S'TANDARD", "CHARTERED", "BANK"]
+    console.log("-----------------------");
+</script>
