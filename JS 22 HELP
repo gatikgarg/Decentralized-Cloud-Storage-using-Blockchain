@@ -1,0 +1,47 @@
+<script>
+    // --- 1. Function to display the Fibonacci series for 10 numbers ---
+
+    /**
+     * Displays the first 10 numbers of the Fibonacci series.
+     * Starts with 0 and 1, where each subsequent number is the sum of the previous two.
+     */
+    function displayFibonacciSeries() {
+        const count = 10;
+        let a = 0;
+        let b = 1;
+        const series = [a, b];
+
+        // The correct 10-number series is 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+        for (let i = 2; i < count; i++) {
+            const next = a + b;
+            series.push(next);
+            a = b;
+            b = next;
+        }
+
+        console.log("--- Fibonacci Series (First 10 Numbers) ---");
+        console.log(series.join(", "));
+    }
+
+    // --- 2. Function to display the table of 8 ---
+
+    /**
+     * Displays the multiplication table for the number 8, up to 10 multiples.
+     */
+    function displayTableOfEight() {
+        const number = 8;
+        console.log(`\n--- Multiplication Table for ${number} ---`);
+
+        for (let i = 1; i <= 10; i++) {
+            const result = number * i;
+            // Outputs to console in the format: 8 x 1 = 8
+            console.log(`${number} x ${i} = ${result}`);
+        }
+    }
+
+
+    // --- Execution ---
+    // Call the functions to run the code and display output in the console
+    displayFibonacciSeries();
+    displayTableOfEight();
+</script>
