@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonials Page (Functional)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+
+                <div class="card p-3 mb-4">
+                    <form id="testimonial-form">
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-3 col-sm-2 text-end pe-0">
+                                <button class="btn btn-primary btn-sm w-100" disabled>Name</button>
+                            </div>
+                            <div class="col-9 col-sm-10 ps-2">
+                                <input type="text" class="form-control form-control-sm" id="name-input" placeholder="Your Name" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-3 col-sm-2 text-end pe-0">
+                                <button class="btn btn-primary btn-sm w-100" disabled>Message</button>
+                            </div>
+                            <div class="col-9 col-sm-10 ps-2">
+                                <input type="text" class="form-control form-control-sm" id="message-input" placeholder="Enter your Message" required>
+                            </div>
+                        </div>
+
+                        <div class="row pt-2">
+                            <div class="col-4 offset-3">
+                                <button type="submit" class="btn btn-success w-100">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h5 class="mb-3">Testimonials</h5>
+                    <div id="testimonials-container">
+                        <div class="card p-3 border border-info rounded mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Ritu</h6>
+                                <div>
+                                    <button class="btn btn-success btn-sm me-2 edit-btn">Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                                </div>
+                            </div>
+                            <p class="mb-0 testimonial-message">It has been a positive experience with personable banking service in a timely manner</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript logic for functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('testimonial-form');
+            const nameInput = document.getElementById('name-input');
+            const messageInput = document.getElementById('message-input');
+            const testimonialsContainer = document.getElementById('testimonials-container');
+
+            // --- Function to handle adding a new testimonial ---
+            form.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent the page from reloading
+
+                const name = nameInput.value.trim();
+                const message = messageInput.value.trim();
+
+                if (name === '' || message === '') {
+                    alert('Please enter both your name and a message.');
+                    return;
+                }
+
+                // 1. Create the HTML structure for the new testimonial
+                const newTestimonialHTML = `
+                    <div class="card p-3 border border-info rounded mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">${name}</h6>
+                            <div>
+                                <button class="btn btn-success btn-sm me-2 edit-btn">Edit</button>
+                                <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                            </div>
+                        </div>
+                        <p class="mb-0 testimonial-message">${message}</p>
+                    </div>
+                `;
+
+                // 2. Insert the new testimonial at the beginning of the container (LIFO order)
+                testimonialsContainer.insertAdjacentHTML('afterbegin', newTestimonialHTML);
+
+                // 3. Clear the input fields
+                nameInput.value = '';
+                messageInput.value = '';
+            });
+
+            // --- Simple Delegation for Delete/Edit (Optional but good practice) ---
+            testimonialsContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                
+                // Find the parent testimonial card
+                const testimonialCard = target.closest('.card.border-info');
+
+                if (!testimonialCard) return;
+
+                if (target.classList.contains('delete-btn')) {
+                    // Delete functionality
+                    if (confirm('Are you sure you want to delete this testimonial?')) {
+                        testimonialCard.remove();
+                    }
+                } else if (target.classList.contains('edit-btn')) {
+                    // Basic Edit functionality
+                    const messageElement = testimonialCard.querySelector('.testimonial-message');
+                    const currentMessage = messageElement.textContent;
+                    
+                    // Simple prompt for editing (in a real app, this would use a modal)
+                    const newMessage = prompt('Edit your message:', currentMessage);
+                    
+                    if (newMessage !== null && newMessage.trim() !== '') {
+                        messageElement.textContent = newMessage.trim();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
