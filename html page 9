@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Standard Chartered</title>
+<style>
+  :root{
+    --site-width: 95%;
+    --brand-green:#05a357;
+    --divider:#e6e6e6;
+    --shadow:0 10px 24px rgba(0,0,0,.18);
+    --sc-blue:#0a6ed1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;color:#222}
+
+  /* Header */
+  .site-header{
+    position:sticky;top:0;z-index:10;background:#fff;
+    border-bottom:1px solid var(--divider);
+    display:flex;align-items:center;justify-content:space-between;
+    height:64px;
+  }
+  /* Left nav (home + links together) */
+  .nav-left{
+    display:flex;
+    align-items:center;
+    margin-left:10px;  /* home starts 10px from edge */
+  }
+  .nav-left a{
+  color:#333;
+  text-decoration:none;
+  font-size:17px;   /* increased from 15px */
+  margin-left:35px;
+  transition:color .2s ease;
+}
+
+  .nav-left a:first-child{margin-left:10px} /* first link only 10px after home */
+  .nav-left a:hover{color:var(--sc-blue)}
+  .icon{width:26px;height:26px;fill:#666;cursor:pointer}
+
+  /* Right side */
+  .nav-right{display:flex;align-items:center;gap:20px;margin-right:20px}
+  .login{background:var(--brand-green);color:#fff;border-radius:4px;padding:8px 18px;font-weight:700;text-decoration:none}
+  .brand{height:34px}
+
+  /* HERO background */
+  .hero{position:relative;min-height:100vh}
+  .hero::before{
+    content:"";position:fixed;inset:0;
+    background:url('OCEAN-PHOTO-SC.jpeg') center/cover no-repeat;
+    z-index:-1;
+  }
+  .wrap{width:var(--site-width);margin:0 auto}
+  .hero-title{
+    text-align:center;
+    color:#fff;
+    font-size:46px;
+    font-weight:400;  /* not bold */
+    text-shadow:0 2px 12px rgba(0,0,0,.4);
+    padding:30px 0 24px;
+  }
+
+  /* Cards */
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:28px;
+    padding:8px 0 38px;
+  }
+  .card{
+    display:block;background:#fff;border-radius:6px;overflow:hidden;
+    box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s;
+    text-decoration:none;color:inherit
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.22)}
+  .card .photo{width:100%;height:280px;object-fit:cover;display:block}
+  .card .body{padding:16px 18px 18px}
+  .card h3{font-size:18px;line-height:1.28;margin:0 0 10px;color:#2b2b2b}
+  .card p{font-size:14px;line-height:1.48;color:#666}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <!-- Home + nav links together -->
+  <div class="nav-left">
+    <a href="#" aria-label="Home">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.2 2.5 11a1 1 0 0 0 .7 1.8H5v6.7c0 .3.2.5.5.5H10v-6h4v6h4.5c.3 0 .5-.2.5-.5V12.8h1.8a1 1 0 0 0 .7-1.8L12 3.2z"/></svg>
+    </a>
+    <a href="#">You're in <span style="color:#05a357;font-weight:600">India</span></a>
+    <a href="#">Our Products</a>
+    <a href="#">Promotions</a>
+    <a href="#">Services</a>
+    <a href="#">Help</a>
+    <a href="#" aria-label="Search">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M21.3 20.3 17 16a7.5 7.5 0 1 0-1 1l4.3 4.3a.7.7 0 0 0 1 0 .7.7 0 0 0 0-1zM10.5 16a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>
+    </a>
+  </div>
+
+  <!-- Right side -->
+  <div class="nav-right">
+    <a class="login" href="#">LOGIN</a>
+    <img src="logo-sc.png" alt="Standard Chartered" class="brand">
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1 class="hero-title">Welcome to Standard Chartered</h1>
+    <div class="cards">
+      <a class="card" href="#"><img class="photo" src="card-1.jpg"><div class="body"><h3>Combating the illegal wildlife trade</h3><p>See how we work with partners to fight money laundering and the illegal wildlife trade</p></div></a>
+      <a class="card" href="#"><img class="photo" src="card-2.jpg"><div class="body"><h3>Invest like you never left India</h3><p>Invest on-the-go with NRI Banking.</p></div></a>
+      <a class="card" href="#"><img class="photo" src="card-3.jpg"><div class="body"><h3>Explore the world like a local #PayLikeALocal</h3><p>Load up to 20 currencies on the Multi-Currency Forex card. Apply now</p></div></a>
+      <a class="card" href="#"><img class="photo" src="card-4.jpg"><div class="body"><h3>SC Edge app – Exclusive for salary accounts</h3><p>One app for travel, dining, recharges, bill pay &amp; managing expenses. Know more</p></div></a>
+      <a class="card" href="#"><img class="photo" src="card-5.jpg"><div class="body"><h3>Get 5% cashback at supermarket</h3><p>With Manhattan Platinum credit card</p></div></a>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
