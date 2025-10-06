@@ -1,0 +1,271 @@
+<!doctype html> <!-- Document type declaration: tells browser this is an HTML5 document -->
+<html lang="en"> <!-- Root element with language set to English -->
+<head> <!-- Head section contains metadata and styles -->
+  <meta charset="utf-8" /> <!-- Sets character encoding to UTF-8 so all characters display correctly -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Makes page responsive: width = device width, zoom = 1 -->
+  <title>Subscription Status</title> <!-- Page title that appears in browser tab -->
+  <meta name="description" content="Wireframe to view subscription request statuses." /> <!-- Meta description for SEO/search engines -->
+  <style> /* Start of CSS styling */
+
+    /* :root defines CSS custom properties (variables) that we can reuse */
+    :root{
+      --brand-green:#05a357; /* Variable for green color used in accents (like Login button) */
+      --brand-blue:#0a6ed1; /* Variable for blue color used for highlights */
+      --brand-blue-700:#085aa9; /* Darker blue for heading text */
+
+      --bg:#ffffff;            /* White background color for whole page */
+      --bg-soft:#f1f6fa;       /* Light background for table head */
+      --card:#ffffff;          /* White background color for cards (Report Domain box) */
+
+      --text:#222;             /* Main text color (dark for light background) */
+      --muted:#666;            /* Muted/secondary text color */
+      --divider:#e6e6e6;       /* Divider/border color */
+      --shadow:0 10px 24px rgba(0,0,0,.12); /* Shadow effect lighter for white background */
+    }
+
+    *,*::before,*::after{box-sizing:border-box} /* Ensure padding/border included in element sizes */
+
+    body{ /* Styles for body */
+      margin:0; /* Remove default margin */
+      font-family:"Segoe UI", Roboto, Arial, Helvetica, sans-serif; /* Font stack */
+      color:var(--text); /* Dark text color */
+      background:var(--bg) /* White background */
+    }
+
+    /* Header bar at top */
+    .site-header{
+      position:sticky; /* Sticks to top when scrolling */
+      top:0; /* At the very top */
+      z-index:50; /* Layer priority above content */
+      background:#fff; /* Solid white background */
+      border-bottom:1px solid var(--divider) /* Thin bottom border */
+    }
+
+    .header-inner{
+      display:grid; /* CSS grid for header layout */
+      grid-template-columns:1fr auto 1fr; /* 3 columns: left nav, center brand, right login */
+      align-items:center; /* Vertically align center */
+      height:64px; /* Fixed header height */
+      width:min(1180px,95vw); /* Max width 1180px or 95% of viewport */
+      margin:0 auto; /* Center horizontally */
+      padding:0 8px /* Side padding */
+    }
+
+    nav.primary ul{
+      list-style:none; /* Remove bullets */
+      display:flex; /* Arrange nav links horizontally */
+      align-items:center; /* Vertical center */
+      gap:22px; /* Space between links */
+      margin:0; /* Remove default margin */
+      padding:0 /* Remove default padding */
+    }
+
+    nav.primary a{
+      text-decoration:none; /* Remove underline */
+      font-size:16px; /* Link font size */
+      color:#333; /* Dark gray link color */
+      transition:color .2s ease /* Smooth color change on hover */
+    }
+
+    nav.primary a:hover, nav.primary a:focus{color:var(--brand-blue)} /* Hover/focus turns blue */
+
+    .brand-name{
+      justify-self:center; /* Center in grid */
+      font-family:Arial, Helvetica, sans-serif; /* Font for logo text */
+      font-weight:700; /* Bold */
+      letter-spacing:.4px; /* Slight spacing */
+      font-size:20px; /* Font size */
+      color:var(--brand-blue) /* Blue for RW */
+    }
+
+    .brand-name span{color:var(--brand-green)} /* Green for Tool */
+
+    .login{
+      justify-self:end; /* Align right */
+      background:var(--brand-green); /* Green background */
+      color:#fff; /* White text */
+      border-radius:6px; /* Rounded corners */
+      padding:9px 16px; /* Padding inside button */
+      font-weight:700; /* Bold text */
+      text-decoration:none /* Remove underline */
+    }
+
+    /* Hero section below header */
+    .hero{
+      min-height:calc(100dvh - 64px); /* Fill remaining screen height (viewport height minus header) */
+      background:linear-gradient(180deg, rgba(10,110,209,.15), rgba(5,163,87,.15)); /* Gradient background: top blue (15% opacity), bottom green (15%) */
+      display:block /* Block element */
+    }
+
+    .wrap{
+      width:min(1180px,95vw); /* Content max width */
+      margin:0 auto; /* Center horizontally */
+      padding:28px 0 48px /* Top/bottom padding */
+    }
+
+    .hero h1{
+      font-weight:800; /* Bold heading */
+      letter-spacing:.2px; /* Slight spacing */
+      margin:10px 0 16px; /* Margin top and bottom */
+      color:var(--brand-blue-700) /* Darker blue heading */
+    }
+
+    /* Toolbar section containing search and filter chips */
+    .toolbar{
+      display:grid; /* Grid layout */
+      grid-template-columns:1fr auto; /* Search input on left, chips on right */
+      gap:14px; /* Space between columns */
+      margin:18px 0 14px /* Margin around */
+    }
+
+    .search{position:relative} /* Wrapper to position icon inside input */
+
+    .search input{
+      width:100%; /* Full width */
+      padding:12px 44px 12px 14px; /* Inner padding (right padding for icon space) */
+      border:1px solid var(--divider); /* Border */
+      border-radius:10px; /* Rounded corners */
+      background:#fff; /* White background inside */
+      color:var(--text); /* Dark text */
+      cursor:text /* Shows text cursor */
+    }
+
+    .search input::placeholder{color:#999} /* Placeholder text color */
+
+    .search svg{
+      position:absolute; /* Position inside input */
+      right:12px; /* 12px from right edge */
+      top:50%; /* Vertical center */
+      transform:translateY(-50%); /* Adjust center */
+      width:22px; /* Icon size */
+      height:22px;
+      fill:#999 /* Icon color */
+    }
+
+    .status-tabs{display:flex;flex-wrap:wrap;gap:10px} /* Filter chips arranged horizontally with spacing */
+
+    .chip{
+      display:inline-flex; /* Inline flex for text + dot */
+      align-items:center; /* Center vertical */
+      gap:8px; /* Gap between dot and text */
+      border:1px solid var(--divider); /* Border around chip */
+      border-radius:999px; /* Fully rounded pill shape */
+      padding:9px 14px; /* Inner padding */
+      background:var(--bg-soft); /* Light background */
+      color:var(--text); /* Dark text */
+      cursor:default /* Normal cursor */
+    }
+
+    .dot{width:8px;height:8px;border-radius:50%} /* Small circle for status */
+    .dot.pending{background:#f0a202} /* Yellow for Pending */
+    .dot.approved{background:#18a957} /* Green for Approved */
+    .dot.rejected{background:#d64545} /* Red for Rejected */
+
+    /* Table card container */
+    .card{
+      background:var(--card); /* White background */
+      border:1px solid var(--divider); /* Border */
+      box-shadow:var(--shadow); /* Shadow effect around box */
+      border-radius:14px; /* Rounded corners */
+      overflow:hidden /* Hide overflow */
+    }
+
+    table{width:100%;border-collapse:separate;border-spacing:0} /* Full width table */
+
+    thead th{
+      font-size:12px; /* Small text */
+      text-transform:uppercase; /* Uppercase header */
+      letter-spacing:.08em; /* Spaced letters */
+      font-weight:800; /* Bold */
+      text-align:left; /* Align left */
+      color:#333; /* Header text color */
+      background:var(--bg-soft); /* Light background for table head */
+      border-bottom:1px solid var(--divider); /* Bottom border */
+      padding:14px /* Cell padding */
+    }
+
+    tbody td{
+      padding:16px 14px; /* Cell padding */
+      border-bottom:1px solid var(--divider); /* Divider between rows */
+      color:var(--text) /* Cell text color */
+    }
+
+    tbody tr:last-child td{border-bottom:none} /* Remove border from last row */
+
+    .empty{
+      display:grid; /* Center empty message */
+      place-items:center; /* Center horizontally + vertically */
+      padding:40px /* Space inside */
+    }
+
+    .empty div{
+      border:1px dashed var(--divider); /* Dashed border */
+      padding:18px 22px; /* Padding inside */
+      border-radius:12px; /* Rounded box */
+      color:var(--muted); /* Muted text */
+      background:#fafafa /* Very light gray background for message */
+    }
+
+    @media (max-width: 820px){ /* Responsive adjustments for small screens */
+      .toolbar{grid-template-columns:1fr} /* Stack toolbar */
+      nav.primary ul{gap:14px} /* Reduce gap between nav items */
+      .header-inner{height:auto;gap:12px;padding:10px 8px;grid-template-columns:1fr;} /* Adjust header */
+      .brand-name{justify-self:start} /* Brand on left */
+      .login{justify-self:start} /* Login on left */
+    }
+  </style>
+</head>
+<body> <!-- Body content -->
+  <header class="site-header" role="banner"> <!-- Top header -->
+    <div class="header-inner"> <!-- Header inner grid -->
+      <nav class="primary" aria-label="Primary"> <!-- Nav links -->
+        <ul>
+          <li><a href="#" aria-current="page">Dashboard</a></li> <!-- Dashboard link -->
+          <li><a href="#subs">Subscriptions</a></li> <!-- Subscriptions link -->
+          <li><a href="#notifications">Notifications</a></li> <!-- Notifications link -->
+          <li><a href="#help">Help</a></li> <!-- Help link -->
+        </ul>
+      </nav>
+
+      <div class="brand-name">RW <span>Tool</span></div> <!-- Center brand name -->
+
+      <a class="login" href="#login" role="button">Login</a> <!-- Login button -->
+    </div>
+  </header>
+
+  <section class="hero"> <!-- Hero section with gradient -->
+    <div class="wrap"> <!-- Centered wrapper -->
+      <h1>Subscription Status</h1> <!-- Main heading -->
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search" role="search"> <!-- Search box -->
+          <input type="search" placeholder="Search reports…" aria-label="Search subscriptions" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.3 20.3 17 16a7.5 7.5 0 1 0-1 1l4.3 4.3a.7.7 0 0 0 1 0 .7.7 0 0 0 0-1zM10.5 16a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg> <!-- Search icon -->
+        </div>
+        <div class="status-tabs" aria-label="Filter by status"> <!-- Filter chips -->
+          <button class="chip" type="button"><span class="dot" style="background:linear-gradient(90deg,var(--brand-blue),var(--brand-green))"></span>All</button>
+          <button class="chip" type="button"><span class="dot pending"></span>Pending</button>
+          <button class="chip" type="button"><span class="dot approved"></span>Approved</button>
+          <button class="chip" type="button"><span class="dot rejected"></span>Rejected</button>
+        </div>
+      </div>
+
+      <!-- Table card -->
+      <div id="subs" class="card" role="region"> <!-- Table container with shadow -->
+        <table aria-describedby="table-caption">
+          <caption id="table-caption" style="position:absolute;left:-9999px">User subscriptions</caption> <!-- Hidden caption for accessibility -->
+          <thead>
+            <tr>
+              <th scope="col">Report Domain</th> <!-- Column header -->
+              <th scope="col">Status</th> <!-- Column header -->
+            </tr>
+          </thead>
+          <tbody></tbody> <!-- Table body empty -->
+        </table>
+        <div class="empty"><div>No subscriptions yet.</div></div> <!-- Empty state message -->
+      </div>
+    </div>
+  </section>
+</body>
+</html>
