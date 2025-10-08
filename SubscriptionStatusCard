@@ -1,144 +1,239 @@
+// SubscriptionStatusCard.js
+// ^ The filename of this component. You will import it in App.js.
+
+// We import React (the library) and two React Hooks: useState and useEffect.
+// - useState lets us create and update local state variables inside a component.
+// - useEffect lets us run side-effects (like fetching data from an API) when the component mounts.
 import React, { useState, useEffect } from "react";
 
-/**
- * Headless SubscriptionStatusCard logic only
- */
+// We define a very small default API object. It has a function getMySubscription()
+// that *should* fetch the current user's subscription details from your backend.
+// If you forget to pass a real api prop, this default will throw an error to warn you.
 const defaultApi = {
+  // This is an async function (it returns a Promise). In a real app, you would
+  // call your server here (for example, using fetch or axios) to get subscription data.
   async getMySubscription() {
+    // Throwing an error here so you remember to pass a real api from App.js.
     throw new Error("Please implement api.getMySubscription()");
   },
 };
 
+// This helper function "normalizes" the raw object returned by the API.
+// Normalizing means: keep only the fields we care about and provide safe defaults
+// so our component can rely on a stable shape.
 function normalize(raw) {
+  // If the API sends nothing (null/undefined), we return null and handle that later.
   if (!raw) return null;
+
+  // We only accept these four status values. If we get something else, we default to "PENDING".
   const allowed = new Set(["REQUESTED", "APPROVED", "REJECTED", "PENDING"]);
+  // If raw.status is one of the allowed values, we keep it; otherwise we use "PENDING".
   const status = allowed.has(raw.status) ? raw.status : "PENDING";
+
+  // We build a small clean object with just what we need for the UI.
   return {
-    status,
-    reason: raw.reason ?? null,
-    domains: Array.isArray(raw?.domains) ? raw.domains : [],
+    status,                                              // One of: REQUESTED, APPROVED, REJECTED, PENDING
+    reason: raw.reason ?? null,                          // Optional text reason (could be null)
+    domains: Array.isArray(raw?.domains) ? raw.domains : [], // Array of report domains (or an empty array)
   };
 }
 
-function SubscriptionStatusCard({ api = defaultApi, children }) {
+// This is the main React component. It combines:
+// 1) data fetching/state (logic)
+// 2) JSX structure (the HTML-like UI you see)
+// It is "self-contained" so you can just use <SubscriptionStatusCard api={...}/> in App.js.
+export default function SubscriptionStatusCard({ api = defaultApi }) {
+  // loading: true while we are fetching data from the API so you can show a "Refreshing..." text.
   const [loading, setLoading] = useState(true);
+  // error: if something goes wrong during the fetch, we store the error object here and show it in the UI.
   const [error, setError] = useState(null);
+  // data: the normalized subscription data we got from the API (contains status, reason, domains).
   const [data, setData] = useState(null);
 
+  // query: the text typed in the search input. We use this to filter the domains list by name.
+  const [query, setQuery] = useState("");
+  // filter: which status chip is currently selected. Can be "ALL", "PENDING", "APPROVED", or "REJECTED".
+  const [filter, setFilter] = useState("ALL");
+
+  // useEffect runs after the first render (when the component is mounted) and whenever `api` changes.
+  // We use it to fetch the subscription data exactly once on mount.
   useEffect(() => {
+    // This flag helps avoid setting state on an unmounted component (a common React safety pattern).
     let cancel = false;
+
+    // We create an async function that does the actual API call and state updates.
     async function load() {
-      setLoading(true);
-      setError(null);
+      setLoading(true);    // Turn on the loading flag so the UI can show "Refreshing..."
+      setError(null);      // Clear any previous error
       try {
-        const res = await api.getMySubscription();
-        if (!cancel) setData(normalize(res));
+        const res = await api.getMySubscription(); // Wait for the API response
+        if (!cancel) {
+          // If we are still mounted, normalize and store the data
+          setData(normalize(res));
+        }
       } catch (e) {
-        if (!cancel) setError(e);
+        // If something goes wrong (network, server, etc.), store the error so we can display it
+        if (!cancel) {
+          setError(e);
+        }
       } finally {
-        if (!cancel) setLoading(false);
+        // Whether success or error, stop the loading indicator (if still mounted)
+        if (!cancel) {
+          setLoading(false);
+        }
       }
     }
+
+    // Call the async loader once on mount.
     load();
+
+    // Return a cleanup function that runs when the component unmounts.
+    // We set cancel = true so any in-flight request won't try to set state after unmounting.
     return () => {
       cancel = true;
     };
-  }, [api]);
+  }, [api]); // If the `api` prop changes to a new object, we refetch using the new API.
 
+  // This function lets the user manually refresh by clicking the Refresh button.
+  // It repeats the same logic as the effect above but without the unmount guard (we're mounted).
   async function refresh() {
-    setLoading(true);
-    setError(null);
+    setLoading(true);   // Turn on loading indicator
+    setError(null);     // Clear previous error
     try {
-      const res = await api.getMySubscription();
-      setData(normalize(res));
+      const res = await api.getMySubscription(); // Fetch again
+      setData(normalize(res));                   // Normalize + store
     } catch (e) {
-      setError(e);
+      setError(e);                               // Store the error if any
     } finally {
-      setLoading(false);
+      setLoading(false);                         // Turn off loading indicator
     }
   }
 
-  if (typeof children !== "function") return null;
+  // We compute a lowercase version of the search query so that filtering is case-insensitive.
+  const lowerQ = query.trim().toLowerCase();
 
-  return children({
-    loading,
-    error,
-    status: data?.status ?? "PENDING",
-    reason: data?.reason ?? null,
-    domains: data?.domains ?? [],
-    refresh,
+  // We build "rows" for the table. The page in your screenshot shows a table with two columns:
+  // "Report Domain" and "Status". Each domain uses the SAME overall subscription status.
+  const rows = (data?.domains ?? []).map((domain) => ({
+    domain,            // The domain name string
+    status: data?.status ?? "PENDING", // The current overall status
+  }));
+
+  // Now we apply the search and status filter to those rows to decide what to display.
+  const filteredRows = rows.filter((r) => {
+    // Text match: if there's no query, match everything; otherwise match domains that include the query.
+    const matchesText = !lowerQ || r.domain.toLowerCase().includes(lowerQ);
+    // Status match: if filter is "ALL" we accept all rows; otherwise row.status must equal the filter.
+    const matchesFilter =
+      filter === "ALL" || (r.status || "").toUpperCase() === filter;
+    // Only keep rows that match both the search text and the selected filter.
+    return matchesText && matchesFilter;
   });
-}
 
-/**
- * Demo preview shaped like the attached screenshot (logic only, no styling)
- */
-function useMockApi() {
-  const [state, setState] = useState({
-    status: "PENDING",
-    reason: null,
-    domains: [],
-  });
-
-  const api = {
-    async getMySubscription() {
-      await new Promise((r) => setTimeout(r, 300));
-      return state;
-    },
-    _set(next) {
-      setState((prev) => ({ ...prev, ...next }));
-    },
-  };
-  return api;
-}
-
-export default function Preview() {
-  const mockApi = useMockApi();
-
+  // We return JSX (HTML-like structure) to render the actual UI.
+  // There is intentionally no CSS here. You can add classes or styles later.
   return (
-    <SubscriptionStatusCard api={mockApi}>
-      {({ loading, error, status, reason, domains, refresh }) => (
-        <>
-          {/* This is only structure, your UI will add search bar, filters, table, etc. */}
-          <h1>Subscription Status</h1>
-          <div>
-            <input placeholder="Search reports..." />
-            <button>All</button>
-            <button>Pending</button>
-            <button>Approved</button>
-            <button>Rejected</button>
-          </div>
+    <div>
+      {/* Title at the top of the page */}
+      <h1>Subscription Status</h1>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Report Domain</th>
-                <th>Status</th>
+      {/* Toolbar area: search input and the four filter chips */}
+      <div>
+        {/* Search input. It is a "controlled input": its value is bound to `query`. */}
+        <input
+          type="search"                              // Gives search semantics (same as text but with clear affordances)
+          placeholder="Search reports..."            // Grey hint text shown when the input is empty
+          value={query}                              // The current text value, taken from React state
+          onChange={(e) => setQuery(e.target.value)} // Update the `query` state as the user types
+          aria-label="Search reports"                // Accessibility label for screen readers
+        />
+        {/* Filter chip buttons. Clicking one sets the `filter` state accordingly. */}
+        <div>
+          <button type="button" onClick={() => setFilter("ALL")}>All</button>
+          <button type="button" onClick={() => setFilter("PENDING")}>Pending</button>
+          <button type="button" onClick={() => setFilter("APPROVED")}>Approved</button>
+          <button type="button" onClick={() => setFilter("REJECTED")}>Rejected</button>
+        </div>
+      </div>
+
+      {/* Table with two columns: "Report Domain" and "Status". */}
+      <table>
+        {/* The table header defines the column names. */}
+        <thead>
+          <tr>
+            <th scope="col">Report Domain</th> {/* First column header */}
+            <th scope="col">Status</th>        {/* Second column header */}
+          </tr>
+        </thead>
+
+        {/* The table body lists the filtered rows. If there are none, we show an "empty" row. */}
+        <tbody>
+          {filteredRows.length === 0 ? (
+            // If no rows match search/filter, show a single row that says "No subscriptions yet."
+            <tr>
+              {/* colSpan=2 makes this one cell span across both columns so the message is centered visually */}
+              <td colSpan={2}>No subscriptions yet.</td>
+            </tr>
+          ) : (
+            // Otherwise, map each row to a <tr>. The `key` helps React identify rows efficiently.
+            filteredRows.map((r, i) => (
+              <tr key={`${r.domain}-${i}`}>
+                {/* First column displays the domain text */}
+                <td>{r.domain}</td>
+                {/* Second column displays the current subscription status */}
+                <td>{r.status}</td>
               </tr>
-            </thead>
-            <tbody>
-              {domains.length === 0 ? (
-                <tr>
-                  <td colSpan="2">No subscriptions yet.</td>
-                </tr>
-              ) : (
-                domains.map((d, i) => (
-                  <tr key={i}>
-                    <td>{d}</td>
-                    <td>{status}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+            ))
+          )}
+        </tbody>
+      </table>
 
-          {reason && <div>Reason: {reason}</div>}
-          {error && <div>Error: {String(error.message || error)}</div>}
-          <button onClick={refresh} disabled={loading}>
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
-        </>
-      )}
-    </SubscriptionStatusCard>
+      {/* Footer area: a Refresh button and an error message if something went wrong. */}
+      <div>
+        {/* Clicking this calls our refresh() function to re-fetch data. We disable it while loading. */}
+        <button type="button" onClick={refresh} disabled={loading}>
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
+        {/* If there is an error, show it below the button so the user can see what happened. */}
+        {error && <div role="alert">Error: {String(error.message || error)}</div>}
+      </div>
+    </div>
   );
 }
+
+
+
+
+
+// App.js
+// ^ This is the main entry component for your React app. It renders SubscriptionStatusCard on the page.
+
+// We import React so we can write JSX (HTML-like syntax) and define components.
+import React from "react";
+// We import the component file you just created above.
+import SubscriptionStatusCard from "./SubscriptionStatusCard";
+
+// Here we define a very simple mock API object to pass into the component.
+// In your real project, replace the function below to actually call your backend
+// (e.g., using fetch('/api/subscriptions?me=1')) and return the real data.
+const api = {
+  // This async function returns a sample shape that matches what SubscriptionStatusCard expects.
+  async getMySubscription() {
+    // You can change these values to test different states (APPROVED, REJECTED, REQUESTED, PENDING).
+    return {
+      status: "PENDING",                 // Try "APPROVED" or "REJECTED" to see the table update.
+      reason: null,                      // Optional: a reason string for approval/rejection.
+      domains: ["finance", "risk-ops"],  // Example list of approved report domains (strings).
+    };
+  },
+};
+
+// We export the App component as the default export so your bundler can render it in index.js.
+export default function App() {
+  // We simply render the SubscriptionStatusCard and pass our api as a prop.
+  // The component handles fetching, state, and rendering the UI (JSX) for you.
+  return <SubscriptionStatusCard api={api} />;
+}
+
+
+
