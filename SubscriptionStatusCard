@@ -1,0 +1,144 @@
+import React, { useState, useEffect } from "react";
+
+/**
+ * Headless SubscriptionStatusCard logic only
+ */
+const defaultApi = {
+  async getMySubscription() {
+    throw new Error("Please implement api.getMySubscription()");
+  },
+};
+
+function normalize(raw) {
+  if (!raw) return null;
+  const allowed = new Set(["REQUESTED", "APPROVED", "REJECTED", "PENDING"]);
+  const status = allowed.has(raw.status) ? raw.status : "PENDING";
+  return {
+    status,
+    reason: raw.reason ?? null,
+    domains: Array.isArray(raw?.domains) ? raw.domains : [],
+  };
+}
+
+function SubscriptionStatusCard({ api = defaultApi, children }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    let cancel = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.getMySubscription();
+        if (!cancel) setData(normalize(res));
+      } catch (e) {
+        if (!cancel) setError(e);
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancel = true;
+    };
+  }, [api]);
+
+  async function refresh() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getMySubscription();
+      setData(normalize(res));
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (typeof children !== "function") return null;
+
+  return children({
+    loading,
+    error,
+    status: data?.status ?? "PENDING",
+    reason: data?.reason ?? null,
+    domains: data?.domains ?? [],
+    refresh,
+  });
+}
+
+/**
+ * Demo preview shaped like the attached screenshot (logic only, no styling)
+ */
+function useMockApi() {
+  const [state, setState] = useState({
+    status: "PENDING",
+    reason: null,
+    domains: [],
+  });
+
+  const api = {
+    async getMySubscription() {
+      await new Promise((r) => setTimeout(r, 300));
+      return state;
+    },
+    _set(next) {
+      setState((prev) => ({ ...prev, ...next }));
+    },
+  };
+  return api;
+}
+
+export default function Preview() {
+  const mockApi = useMockApi();
+
+  return (
+    <SubscriptionStatusCard api={mockApi}>
+      {({ loading, error, status, reason, domains, refresh }) => (
+        <>
+          {/* This is only structure, your UI will add search bar, filters, table, etc. */}
+          <h1>Subscription Status</h1>
+          <div>
+            <input placeholder="Search reports..." />
+            <button>All</button>
+            <button>Pending</button>
+            <button>Approved</button>
+            <button>Rejected</button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Report Domain</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {domains.length === 0 ? (
+                <tr>
+                  <td colSpan="2">No subscriptions yet.</td>
+                </tr>
+              ) : (
+                domains.map((d, i) => (
+                  <tr key={i}>
+                    <td>{d}</td>
+                    <td>{status}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {reason && <div>Reason: {reason}</div>}
+          {error && <div>Error: {String(error.message || error)}</div>}
+          <button onClick={refresh} disabled={loading}>
+            {loading ? "Refreshing..." : "Refresh"}
+          </button>
+        </>
+      )}
+    </SubscriptionStatusCard>
+  );
+}
